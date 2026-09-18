@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Test / lint / tooling caches
+.pytest_cache/
+.ruff_cache/
+
+# Virtual environments
+venv/
+.venv/
+
+# Environment / editor
+.env
+.vscode/
+
+# Logs
+logs/
+*.log
+droxaitower.log
+
+# Secrets / keys
+keys/
+
+# Local config
+config.json
+
+# Local binaries / tools
+nssm-2.24/
+
+# Local database
+droxaitower.db

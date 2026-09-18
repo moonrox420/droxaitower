@@ -1,0 +1,860 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>Drox Command Tower | Sovereign Licensing & Kill-Switch Hub</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="description" content="Centralized Sovereign Licensing, Entitlements & Customer Kill-Switch Hub"/>
+    <style>
+        :root {
+            --bg: #07090e;
+            --surface: #0e131d;
+            --surface-card: #131a27;
+            --surface-hover: #182233;
+            --border: #1e293b;
+            --border-glow: #2a3b53;
+            --cyan: #00f0ff;
+            --cyan-glow: rgba(0, 240, 255, 0.25);
+            --emerald: #00ff88;
+            --emerald-glow: rgba(0, 255, 136, 0.25);
+            --crimson: #ff0055;
+            --crimson-glow: rgba(255, 0, 85, 0.35);
+            --amber: #ffb700;
+            --amber-glow: rgba(255, 183, 0, 0.25);
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(0, 240, 255, 0.05) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(255, 0, 85, 0.04) 0px, transparent 50%);
+            color: var(--text-main);
+            min-height: 100vh;
+            line-height: 1.5;
+            padding-bottom: 3rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem 2rem;
+        }
+
+        /* Top Bar */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.2rem 1.8rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .brand-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--cyan), var(--crimson));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #000;
+            box-shadow: 0 0 15px var(--cyan-glow);
+        }
+        .brand-title h1 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: #fff;
+            text-transform: uppercase;
+        }
+        .brand-title span {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            letter-spacing: 0.5px;
+        }
+
+        .auth-widget {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: rgba(0,0,0,0.4);
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        .auth-widget input {
+            background: transparent;
+            border: none;
+            color: var(--cyan);
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            width: 250px;
+            outline: none;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--emerald);
+            box-shadow: 0 0 8px var(--emerald);
+        }
+        .status-dot.offline {
+            background: var(--crimson);
+            box-shadow: 0 0 8px var(--crimson);
+        }
+
+        /* Telemetry Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.2rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.25rem 1.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--border-glow);
+        }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--cyan);
+        }
+        .stat-card.crimson::before { background: var(--crimson); }
+        .stat-card.emerald::before { background: var(--emerald); }
+        .stat-card.amber::before { background: var(--amber); }
+
+        .stat-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+        }
+        .stat-value {
+            font-size: 2.1rem;
+            font-weight: 800;
+            font-family: var(--font-mono);
+            color: #fff;
+        }
+        .stat-sub {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.3rem;
+        }
+
+        /* Controls / Section Header */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn-group {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        /* Buttons */
+        .btn {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            border: 1px solid transparent;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            text-transform: uppercase;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: var(--cyan);
+            color: #000;
+            box-shadow: 0 0 12px var(--cyan-glow);
+        }
+        .btn-primary:hover {
+            background: #4ef4ff;
+            box-shadow: 0 0 18px var(--cyan-glow);
+        }
+        .btn-secondary {
+            background: var(--surface-card);
+            color: var(--text-main);
+            border-color: var(--border);
+        }
+        .btn-secondary:hover {
+            background: var(--surface-hover);
+            border-color: var(--text-muted);
+        }
+        .btn-danger {
+            background: rgba(255, 0, 85, 0.15);
+            color: #ff3377;
+            border-color: var(--crimson);
+        }
+        .btn-danger:hover {
+            background: var(--crimson);
+            color: #fff;
+            box-shadow: 0 0 15px var(--crimson-glow);
+        }
+        .btn-success {
+            background: rgba(0, 255, 136, 0.15);
+            color: var(--emerald);
+            border-color: var(--emerald);
+        }
+        .btn-success:hover {
+            background: var(--emerald);
+            color: #000;
+            box-shadow: 0 0 15px var(--emerald-glow);
+        }
+
+        /* Table Card */
+        .card-table {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.85rem;
+        }
+        thead {
+            background: rgba(0, 0, 0, 0.4);
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            padding: 0.85rem 1.2rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            font-family: var(--font-mono);
+        }
+        tbody tr {
+            border-bottom: 1px solid rgba(30, 41, 59, 0.5);
+            transition: background 0.15s;
+        }
+        tbody tr:hover {
+            background: var(--surface-hover);
+        }
+        td {
+            padding: 0.9rem 1.2rem;
+            vertical-align: middle;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .badge-active {
+            background: rgba(0, 255, 136, 0.12);
+            color: var(--emerald);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+        }
+        .badge-suspended, .badge-cancelled {
+            background: rgba(255, 0, 85, 0.15);
+            color: #ff3377;
+            border: 1px solid rgba(255, 0, 85, 0.4);
+            box-shadow: 0 0 10px rgba(255, 0, 85, 0.2);
+        }
+        .badge-past_due {
+            background: rgba(255, 183, 0, 0.15);
+            color: var(--amber);
+            border: 1px solid rgba(255, 183, 0, 0.3);
+        }
+
+        /* Terminal Audit Radar */
+        .radar-card {
+            background: #05070a;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.2rem;
+            font-family: var(--font-mono);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+        }
+        .radar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #1a2233;
+            padding-bottom: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+        .radar-title {
+            color: var(--cyan);
+            font-size: 0.85rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .radar-feed {
+            height: 220px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            font-size: 0.8rem;
+        }
+        .radar-row {
+            display: flex;
+            gap: 1rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.02);
+            align-items: center;
+        }
+        .radar-time { color: var(--text-muted); }
+        .radar-action { font-weight: 700; min-width: 140px; }
+        .radar-action.KILL_SWITCH { color: var(--crimson); }
+        .radar-action.VERIFY_PING { color: var(--cyan); }
+        .radar-action.API_CALL { color: var(--emerald); }
+        .radar-action.PAYMENT_SYNC { color: var(--amber); }
+
+        /* Modal styling */
+        .modal-backdrop {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal {
+            background: var(--surface);
+            border: 1px solid var(--border-glow);
+            border-radius: 12px;
+            width: 520px;
+            max-width: 90vw;
+            padding: 1.8rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.75rem;
+        }
+        .modal-title { font-size: 1.1rem; font-weight: 700; text-transform: uppercase; color: #fff; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label {
+            display: block;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-family: var(--font-mono);
+            color: var(--text-muted);
+            margin-bottom: 0.4rem;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.6rem 0.8rem;
+            color: #fff;
+            font-family: inherit;
+            font-size: 0.85rem;
+            outline: none;
+        }
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--cyan);
+            box-shadow: 0 0 8px var(--cyan-glow);
+        }
+        .token-box {
+            background: #000;
+            border: 1px dashed var(--cyan);
+            border-radius: 6px;
+            padding: 0.8rem;
+            color: var(--cyan);
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            word-break: break-all;
+            margin: 1rem 0;
+            max-height: 140px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Top Bar -->
+        <div class="topbar">
+            <div class="brand">
+                <div class="brand-icon">⚡</div>
+                <div class="brand-title">
+                    <h1>Drox Command Tower</h1>
+                    <span>Sovereign Licensing & Customer Kill-Switch Hub | v4.0.0</span>
+                </div>
+            </div>
+            <div class="auth-widget">
+                <div class="status-dot" id="net-dot" title="Server Connectivity"></div>
+                <input type="password" id="master-key" placeholder="Enter Master Key" />
+                <button class="btn btn-secondary" onclick="saveMasterKey()">Sync</button>
+            </div>
+        </div>
+
+        <!-- Master Telemetry Stats -->
+        <div class="stats-grid">
+            <div class="stat-card emerald">
+                <div class="stat-label">Active Customers <span style="color:var(--emerald)">● LIVE</span></div>
+                <div class="stat-value" id="stat-active-customers">--</div>
+                <div class="stat-sub" id="stat-total-customers">Total Accounts: --</div>
+            </div>
+            <div class="stat-card cyan">
+                <div class="stat-label">Monthly Run Rate (MRR) <span>USD</span></div>
+                <div class="stat-value" id="stat-mrr">$0.00</div>
+                <div class="stat-sub">Sovereign Ecosystem MRR</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Active Licenses & Keys <span>VALID</span></div>
+                <div class="stat-value" id="stat-active-keys">--</div>
+                <div class="stat-sub" id="stat-verifications">Verifications: --</div>
+            </div>
+            <div class="stat-card crimson">
+                <div class="stat-label">Tripped Kill Switches <span style="color:var(--crimson)">● CUT OFF</span></div>
+                <div class="stat-value" id="stat-killed-keys" style="color:var(--crimson)">--</div>
+                <div class="stat-sub" id="stat-suspended-customers">Suspended Accounts: --</div>
+            </div>
+        </div>
+
+        <!-- Customer & Entitlements Section -->
+        <div class="section-header">
+            <div class="section-title">
+                <span>🛡️</span> Customer Entitlements & Sovereign Kill Switches
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="openNewCustomerModal()">+ Add Customer</button>
+                <button class="btn btn-primary" onclick="openIssueKeyModal()">⚡ Issue Credential</button>
+                <button class="btn btn-secondary" onclick="refreshData()">↺ Refresh</button>
+            </div>
+        </div>
+
+        <div class="card-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Customer / Company</th>
+                        <th>Email</th>
+                        <th>Project</th>
+                        <th>Plan Tier</th>
+                        <th>Period End</th>
+                        <th>Active Keys</th>
+                        <th>Status</th>
+                        <th style="text-align:right">Kill Switch Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="customers-table-body">
+                    <tr><td colspan="8" style="text-align:center; padding: 2rem; color: var(--text-muted)">Loading entitlements data...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Live Audit Radar -->
+        <div class="radar-card">
+            <div class="radar-header">
+                <div class="radar-title">
+                    <span>📡</span> Live Sovereign Verification Radar
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">
+                    Auto-polling: <span style="color:var(--emerald)">ACTIVE (3s)</span>
+                </div>
+            </div>
+            <div class="radar-feed" id="radar-feed">
+                <div class="radar-row"><span class="radar-time">Connecting to audit feed...</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Issue Credential -->
+    <div class="modal-backdrop" id="modal-issue">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Issue Sovereign Credential</div>
+                <button class="btn btn-secondary" style="padding:0.2rem 0.5rem" onclick="closeModal('modal-issue')">✕</button>
+            </div>
+            <div class="form-group">
+                <label>Target Customer</label>
+                <select id="issue-customer-select"></select>
+            </div>
+            <div class="form-group">
+                <label>Project Ecosystem</label>
+                <select id="issue-project-select">
+                    <option value="tradepost">TradePost (Algorithmic Terminal)</option>
+                    <option value="securosoc">SecuroSOC (Threat Engine)</option>
+                    <option value="ai-proxy">DroxAI Model Gateway</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Credential Type</label>
+                <select id="issue-type-select">
+                    <option value="DESKTOP_LICENSE">TradePost Ed25519 Signed License (.license.sig)</option>
+                    <option value="API_KEY">Cloud/Live API Key (PBKDF2 Hashed)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Plan Tier</label>
+                <select id="issue-tier-select">
+                    <option value="PRO">PRO</option>
+                    <option value="ENTERPRISE">ENTERPRISE</option>
+                    <option value="STANDARD">STANDARD</option>
+                    <option value="LIFETIME">LIFETIME (Perpetual)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Validity Duration (Days)</label>
+                <input type="number" id="issue-days" value="365" min="1" max="3650"/>
+            </div>
+            <button class="btn btn-primary" style="width:100%; justify-content:center; margin-top:1rem;" onclick="submitIssueCredential()">Generate & Sign Credential</button>
+            
+            <div id="issue-result" style="display:none">
+                <div class="token-box" id="issue-token-display"></div>
+                <button class="btn btn-secondary" style="width:100%; justify-content:center;" onclick="copyToken()">📋 Copy Token to Clipboard</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: New Customer -->
+    <div class="modal-backdrop" id="modal-customer">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Register Customer</div>
+                <button class="btn btn-secondary" style="padding:0.2rem 0.5rem" onclick="closeModal('modal-customer')">✕</button>
+            </div>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="new-cust-email" placeholder="client@organization.com" required/>
+            </div>
+            <div class="form-group">
+                <label>Company / Organization Name</label>
+                <input type="text" id="new-cust-company" placeholder="e.g. Acme Capital Partners"/>
+            </div>
+            <div class="form-group">
+                <label>Initial Project</label>
+                <select id="new-cust-project">
+                    <option value="tradepost">TradePost</option>
+                    <option value="securosoc">SecuroSOC</option>
+                    <option value="ai-proxy">AI Proxy</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Plan Tier</label>
+                <select id="new-cust-tier">
+                    <option value="PRO">PRO</option>
+                    <option value="ENTERPRISE">ENTERPRISE</option>
+                    <option value="STANDARD">STANDARD</option>
+                    <option value="LIFETIME">LIFETIME</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Monthly Amount (USD)</label>
+                <input type="number" id="new-cust-amount" value="99.00" step="0.01"/>
+            </div>
+            <button class="btn btn-primary" style="width:100%; justify-content:center; margin-top:1rem;" onclick="submitCreateCustomer()">Create Customer & Subscription</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+
+        function getMasterKey() {
+            return localStorage.getItem('drox_master_key')
+                || document.getElementById('master-key').value.trim();
+        }
+
+        function saveMasterKey() {
+            const key = document.getElementById('master-key').value.trim();
+            if (key) {
+                localStorage.setItem('drox_master_key', key);
+                alert('Master Key saved.');
+                refreshData();
+            }
+        }
+
+        async function api(path, options = {}) {
+            options.headers = options.headers || {};
+            options.headers['X-Master-Key'] = getMasterKey();
+            if (options.body && typeof options.body === 'object') {
+                options.headers['Content-Type'] = 'application/json';
+                options.body = JSON.stringify(options.body);
+            }
+            try {
+                const res = await fetch(API_BASE + path, options);
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({ detail: res.statusText }));
+                    throw new Error(err.detail || `HTTP ${res.status}`);
+                }
+                document.getElementById('net-dot').className = 'status-dot';
+                return await res.json();
+            } catch (err) {
+                document.getElementById('net-dot').className = 'status-dot offline';
+                throw err;
+            }
+        }
+
+        async function refreshStats() {
+            try {
+                const stats = await api('/api/v1/admin/stats');
+                document.getElementById('stat-active-customers').textContent = stats.active_customers;
+                document.getElementById('stat-total-customers').textContent = `Total Accounts: ${stats.total_customers}`;
+                document.getElementById('stat-mrr').textContent = `$${stats.total_mrr_usd.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+                document.getElementById('stat-active-keys').textContent = stats.active_credentials;
+                document.getElementById('stat-verifications').textContent = `Verifications: ${stats.total_verifications}`;
+                document.getElementById('stat-killed-keys').textContent = stats.tripped_kill_switches;
+                document.getElementById('stat-suspended-customers').textContent = `Suspended: ${stats.suspended_customers} | Past Due: ${stats.past_due_customers}`;
+            } catch (err) {
+                console.error('Stats error:', err);
+            }
+        }
+
+        let customersCache = [];
+
+        async function refreshCustomers() {
+            try {
+                const customers = await api('/api/v1/admin/customers');
+                customersCache = customers;
+                const tbody = document.getElementById('customers-table-body');
+                tbody.innerHTML = '';
+
+                if (!customers.length) {
+                    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 2rem; color: var(--text-muted)">No customers found. Click [+ Add Customer] to create one.</td></tr>';
+                    return;
+                }
+
+                customers.forEach(c => {
+                    const tr = document.createElement('tr');
+                    const isSuspended = c.billing_status === 'SUSPENDED' || c.billing_status === 'CANCELLED';
+                    const badgeClass = `badge-${c.billing_status.toLowerCase()}`;
+                    const endDate = c.current_period_end ? c.current_period_end.split('T')[0] : 'PERPETUAL';
+
+                    tr.innerHTML = `
+                        <td><strong>${escapeHtml(c.company_name || 'N/A')}</strong><div style="font-size:0.7rem; color:var(--text-muted); font-family:var(--font-mono)">${c.customer_id}</div></td>
+                        <td>${escapeHtml(c.email)}</td>
+                        <td><span class="badge" style="background:#1e293b; color:#38bdf8">${c.project_slug}</span></td>
+                        <td><strong>${c.plan_tier}</strong> <span style="color:var(--text-muted)">($${c.amount_usd})</span></td>
+                        <td style="font-family:var(--font-mono)">${endDate}</td>
+                        <td><span style="color:var(--emerald)">${c.active_keys_count} active</span> / <span style="color:var(--crimson)">${c.killed_keys_count} killed</span></td>
+                        <td><span class="badge ${badgeClass}">● ${c.billing_status}</span></td>
+                        <td style="text-align:right">
+                            ${isSuspended ? 
+                                `<button class="btn btn-success" onclick="restoreCustomer('${c.customer_id}')">↺ RESTORE</button>` : 
+                                `<button class="btn btn-danger" onclick="killCustomer('${c.customer_id}')">⚡ KILL ACCESS</button>`
+                            }
+                            <button class="btn btn-secondary" onclick="openIssueKeyModalFor('${c.customer_id}', '${c.project_slug}')">+ KEY</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                // Update customer modal select options
+                const sel = document.getElementById('issue-customer-select');
+                sel.innerHTML = customers.map(c => `<option value="${c.customer_id}">${c.company_name || c.email} (${c.customer_id})</option>`).join('');
+            } catch (err) {
+                console.error('Customers error:', err);
+            }
+        }
+
+        async function refreshRadar() {
+            try {
+                const logs = await api('/api/v1/admin/audit-logs?limit=25');
+                const feed = document.getElementById('radar-feed');
+                feed.innerHTML = '';
+                if (!logs.length) {
+                    feed.innerHTML = '<div class="radar-row"><span class="radar-time">No audit events logged yet.</span></div>';
+                    return;
+                }
+                logs.forEach(l => {
+                    const row = document.createElement('div');
+                    row.className = 'radar-row';
+                    const time = l.timestamp.replace('T', ' ').replace('Z', '');
+                    const statusColor = l.status_code === 200 ? 'var(--emerald)' : (l.status_code === 402 ? 'var(--amber)' : 'var(--crimson)');
+                    row.innerHTML = `
+                        <span class="radar-time">${time}</span>
+                        <span class="radar-action ${l.action}">[${l.action}]</span>
+                        <span style="color:${statusColor}; font-weight:700">${l.status_code}</span>
+                        <span style="color:var(--text-muted)">IP: ${l.ip_address}</span>
+                        <span>${l.customer_id ? `CUS: ${l.customer_id}` : ''} ${l.project_slug ? `PRJ: ${l.project_slug}` : ''}</span>
+                        <span style="margin-left:auto; color:var(--text-muted)">${l.latency_ms}ms</span>
+                    `;
+                    feed.appendChild(row);
+                });
+            } catch (err) {
+                console.error('Radar error:', err);
+            }
+        }
+
+        async function killCustomer(customerId) {
+            if (!confirm(`EMERGENCY KILL SWITCH: Are you sure you want to CUT OFF customer ${customerId}? All active API keys and desktop licenses will be immediately revoked!`)) return;
+            try {
+                await api(`/api/v1/admin/customers/${customerId}/toggle-kill`, { method: 'POST' });
+                refreshData();
+            } catch (err) {
+                alert(`Failed to activate kill switch: ${err.message}`);
+            }
+        }
+
+        async function restoreCustomer(customerId) {
+            try {
+                await api(`/api/v1/admin/customers/${customerId}/restore`, { method: 'POST' });
+                refreshData();
+            } catch (err) {
+                alert(`Failed to restore customer: ${err.message}`);
+            }
+        }
+
+        async function submitCreateCustomer() {
+            const email = document.getElementById('new-cust-email').value.trim();
+            const company = document.getElementById('new-cust-company').value.trim();
+            const project = document.getElementById('new-cust-project').value;
+            const tier = document.getElementById('new-cust-tier').value;
+            const amount = parseFloat(document.getElementById('new-cust-amount').value) || 0.0;
+
+            if (!email) return alert('Email required');
+
+            try {
+                await api('/api/v1/admin/customers', {
+                    method: 'POST',
+                    body: {
+                        email,
+                        company_name: company,
+                        project_slug: project,
+                        plan_tier: tier,
+                        amount_usd: amount,
+                        billing_interval: 'MONTHLY'
+                    }
+                });
+                closeModal('modal-customer');
+                refreshData();
+            } catch (err) {
+                alert(`Error creating customer: ${err.message}`);
+            }
+        }
+
+        async function submitIssueCredential() {
+            const customerId = document.getElementById('issue-customer-select').value;
+            const projectSlug = document.getElementById('issue-project-select').value;
+            const credentialType = document.getElementById('issue-type-select').value;
+            const planTier = document.getElementById('issue-tier-select').value;
+            const days = parseInt(document.getElementById('issue-days').value) || 365;
+
+            try {
+                const res = await api('/api/v1/admin/credentials/issue', {
+                    method: 'POST',
+                    body: {
+                        customer_id: customerId,
+                        project_slug: projectSlug,
+                        credential_type: credentialType,
+                        plan_tier: planTier,
+                        validity_days: days
+                    }
+                });
+
+                document.getElementById('issue-result').style.display = 'block';
+                document.getElementById('issue-token-display').textContent = res.raw_token;
+                refreshData();
+            } catch (err) {
+                alert(`Error issuing credential: ${err.message}`);
+            }
+        }
+
+        function copyToken() {
+            const text = document.getElementById('issue-token-display').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Token copied to clipboard!');
+            });
+        }
+
+        function openNewCustomerModal() {
+            document.getElementById('modal-customer').style.display = 'flex';
+        }
+        function openIssueKeyModal() {
+            document.getElementById('issue-result').style.display = 'none';
+            document.getElementById('modal-issue').style.display = 'flex';
+        }
+        function openIssueKeyModalFor(customerId, projectSlug) {
+            openIssueKeyModal();
+            document.getElementById('issue-customer-select').value = customerId;
+            document.getElementById('issue-project-select').value = projectSlug;
+        }
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+        }
+
+        function refreshData() {
+            refreshStats();
+            refreshCustomers();
+            refreshRadar();
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const stored = localStorage.getItem('drox_master_key');
+            if (stored) document.getElementById('master-key').value = stored;
+            refreshData();
+            setInterval(refreshRadar, 3000);
+            setInterval(refreshStats, 6000);
+        });
+    </script>
+</body>
+</html>
